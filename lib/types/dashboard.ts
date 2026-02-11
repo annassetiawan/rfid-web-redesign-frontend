@@ -4,10 +4,16 @@ export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
+  children?: Array<{
+    label: string;
+    href: string;
+  }>;
+  expanded?: boolean;
+  hasChevron?: boolean;
 };
 
 export type NavGroup = {
-  title: string;
+  title?: string;
   items: NavItem[];
 };
 

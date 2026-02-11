@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { navGroups } from "@/lib/mock";
@@ -16,23 +17,51 @@ type SidebarNavItemProps = {
 
 function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
   const Icon = item.icon;
+  const isExpanded = Boolean(item.expanded && item.children?.length);
 
   return (
-    <Button
-      asChild
-      className={cn(
-        "h-10 w-full rounded-lg text-sm text-muted-foreground",
-        collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3"
+    <div className="flex flex-col gap-1">
+      <Button
+        asChild
+        className={cn(
+          "h-11 w-full rounded-none text-sm text-slate-600 hover:text-slate-700",
+          collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3",
+          isExpanded && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
+        )}
+        variant="ghost"
+      >
+        <Link href={item.href}>
+          <span className="grid h-9 w-9 shrink-0 place-items-center">
+            <Icon className="h-5 w-5" />
+          </span>
+          {!collapsed && <span className="truncate font-medium">{item.label}</span>}
+          {!collapsed && item.hasChevron && (
+            <span className="ml-auto grid h-5 w-5 place-items-center">
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-slate-400" />
+              )}
+            </span>
+          )}
+        </Link>
+      </Button>
+
+      {!collapsed && isExpanded && (
+        <div className="bg-indigo-50/60 px-3 py-1.5">
+          {item.children?.map((child) => (
+            <Button
+              key={child.label}
+              asChild
+              className="h-10 w-full justify-start rounded-none px-9 text-sm font-medium text-indigo-600 hover:bg-transparent hover:text-indigo-600"
+              variant="ghost"
+            >
+              <Link href={child.href}>{child.label}</Link>
+            </Button>
+          ))}
+        </div>
       )}
-      variant="ghost"
-    >
-      <Link href={item.href}>
-        <span className="grid h-9 w-9 shrink-0 place-items-center">
-          <Icon className="h-5 w-5" />
-        </span>
-        {!collapsed && <span className="truncate">{item.label}</span>}
-      </Link>
-    </Button>
+    </div>
   );
 }
 
@@ -40,27 +69,27 @@ export function DashboardSidebar({ collapsed }: DashboardSidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden h-screen flex-col border-r bg-card/95 md:flex",
+        "hidden h-screen flex-col border-r border-slate-200 bg-[#f3f4f8] md:flex",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <div className={cn("flex h-16 items-center border-b", collapsed ? "justify-center px-2" : "px-4")}>
-        <div className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-xs font-bold text-primary">
+      <div className={cn("flex h-16 items-center border-b border-slate-200", collapsed ? "justify-center px-2" : "px-4")}>
+        <div className="grid h-9 w-9 place-items-center rounded-md bg-indigo-100 text-xs font-bold text-indigo-600">
           RF
         </div>
         {!collapsed && (
           <div className="ml-3">
-            <p className="text-sm font-semibold">RFID Admin</p>
-            <p className="text-xs text-muted-foreground">Operations Console</p>
+            <p className="text-sm font-semibold text-slate-700">RFID Admin</p>
+            <p className="text-xs text-slate-500">Operations Console</p>
           </div>
         )}
       </div>
 
-      <nav className={cn("flex flex-1 flex-col overflow-y-auto p-2", collapsed ? "gap-3" : "gap-4")}>
-        {navGroups.map((group) => (
-          <section key={group.title} className="flex flex-col gap-1">
-            {!collapsed && (
-              <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <nav className="flex flex-1 flex-col overflow-y-auto py-3">
+        {navGroups.map((group, groupIndex) => (
+          <section key={groupIndex} className="flex flex-col gap-1">
+            {group.title && !collapsed && (
+              <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                 {group.title}
               </p>
             )}

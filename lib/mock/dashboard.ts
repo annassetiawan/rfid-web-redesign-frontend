@@ -1,12 +1,20 @@
 import {
-  Boxes,
   ChartSpline,
   ClipboardList,
   Clock3,
+  GitPullRequest,
+  Mail,
+  Package,
   PackageCheck,
+  ScanLine,
+  Search,
+  Server,
   Truck,
-  Undo2,
-  Wrench,
+  User,
+  Users,
+  Warehouse,
+  CircleHelp,
+  LayoutGrid,
   type LucideIcon
 } from "lucide-react";
 
@@ -21,20 +29,25 @@ import type {
 
 export const navGroups: NavGroup[] = [
   {
-    title: "Operations",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: ChartSpline },
-      { label: "Deliveries", href: "#", icon: Truck },
-      { label: "Pickups", href: "#", icon: Undo2 },
-      { label: "Missing Parts", href: "#", icon: Wrench }
-    ]
-  },
-  {
-    title: "Inventory",
-    items: [
-      { label: "Label Management", href: "#", icon: Boxes },
-      { label: "Tagging Queue", href: "#", icon: ClipboardList },
-      { label: "Inbound", href: "#", icon: PackageCheck }
+      { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+      {
+        label: "Request",
+        href: "#",
+        icon: GitPullRequest,
+        expanded: true,
+        hasChevron: true,
+        children: [{ label: "Local", href: "#" }]
+      },
+      { label: "Unit", href: "#", icon: Server, hasChevron: true },
+      { label: "Search", href: "#", icon: Search },
+      { label: "Cycle Count", href: "#", icon: Package },
+      { label: "Customer", href: "#", icon: Users },
+      { label: "Warehouse", href: "#", icon: Warehouse },
+      { label: "Scanner", href: "#", icon: ScanLine },
+      { label: "Logistic Email", href: "#", icon: Mail },
+      { label: "User", href: "#", icon: User },
+      { label: "Support Center", href: "#", icon: CircleHelp }
     ]
   }
 ];
