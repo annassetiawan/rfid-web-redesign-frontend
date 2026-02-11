@@ -1,12 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requestSummary } from "@/lib/mock";
-
-const toneClasses = {
-  slate: "bg-slate-100 text-slate-700",
-  blue: "bg-blue-100 text-blue-700",
-  green: "bg-emerald-100 text-emerald-700",
-  amber: "bg-amber-100 text-amber-700"
-} as const;
 
 export function RequestStatusSummary() {
   return (
@@ -29,9 +23,7 @@ export function RequestStatusSummary() {
                     <p className="text-xs text-muted-foreground">{item.label}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-xl font-semibold">{item.value}</p>
-                      <span className={`rounded-md px-2 py-1 text-xs font-medium ${toneClasses[item.tone]}`}>
-                        {block.title}
-                      </span>
+                      <Badge variant={item.tone}>{block.title}</Badge>
                     </div>
                   </div>
                 ))}

@@ -1,7 +1,25 @@
-import { Bell, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
+"use client";
 
+import { Bell, Search, SlidersHorizontal } from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { dateRangeOptions } from "@/lib/mock";
 
 type DashboardTopbarProps = {
@@ -23,43 +41,44 @@ export function DashboardTopbar({ onToggleSidebar }: DashboardTopbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <select
-            aria-label="Date range"
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-            defaultValue={dateRangeOptions[1]}
-          >
-            {dateRangeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <Select defaultValue={dateRangeOptions[1]}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Select range" />
+            </SelectTrigger>
+            <SelectContent>
+              {dateRangeOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Button size="icon" variant="ghost">
             <Bell className="h-4 w-4" />
             <span className="sr-only">Notifications</span>
           </Button>
 
-          <details className="relative">
-            <summary className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-md border px-3 text-sm text-foreground marker:content-none">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                AD
-              </span>
-              <span className="hidden sm:inline">Admin User</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </summary>
-            <div className="absolute right-0 z-10 mt-2 w-44 rounded-md border bg-card p-1 shadow-lg">
-              <button className="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent" type="button">
-                Profile
-              </button>
-              <button className="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent" type="button">
-                Preferences
-              </button>
-              <button className="w-full rounded px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50" type="button">
-                Sign out
-              </button>
-            </div>
-          </details>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2 px-2" variant="ghost">
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                    AD
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden sm:inline">Admin User</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Preferences</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600 focus:text-red-600">Sign out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { navGroups } from "@/lib/mock";
 import type { NavItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -18,19 +18,21 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
   const Icon = item.icon;
 
   return (
-    <Link
-      href={item.href}
+    <Button
+      asChild
       className={cn(
-        buttonVariants({ variant: "ghost" }),
         "h-10 w-full rounded-lg text-sm text-muted-foreground",
         collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3"
       )}
+      variant="ghost"
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center">
-        <Icon className="h-5 w-5" />
-      </span>
-      {!collapsed && <span className="truncate">{item.label}</span>}
-    </Link>
+      <Link href={item.href}>
+        <span className="grid h-9 w-9 shrink-0 place-items-center">
+          <Icon className="h-5 w-5" />
+        </span>
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </Link>
+    </Button>
   );
 }
 

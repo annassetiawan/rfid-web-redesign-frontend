@@ -1,29 +1,35 @@
-import type { HTMLAttributes } from "react";
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-type BadgeVariant = "secondary" | "blue" | "green" | "amber";
+const badgeVariants = cva(
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        slate: "border-transparent bg-slate-100 text-slate-700",
+        blue: "border-transparent bg-blue-100 text-blue-700",
+        green: "border-transparent bg-emerald-100 text-emerald-700",
+        amber: "border-transparent bg-amber-100 text-amber-700"
+      }
+    },
+    defaultVariants: {
+      variant: "default"
+    }
+  }
+);
 
-const variantClass: Record<BadgeVariant, string> = {
-  secondary: "bg-slate-100 text-slate-700",
-  blue: "bg-blue-100 text-blue-700",
-  green: "bg-emerald-100 text-emerald-700",
-  amber: "bg-amber-100 text-amber-700"
-};
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
-type BadgeProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: BadgeVariant;
-};
-
-export function Badge({ className, variant = "secondary", ...props }: BadgeProps) {
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
-        variantClass[variant],
-        className
-      )}
-      {...props}
-    />
-  );
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
+
+export { Badge, badgeVariants };
