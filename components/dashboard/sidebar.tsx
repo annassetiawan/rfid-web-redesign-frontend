@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { LayoutDashboard, RadioTower, Settings } from "lucide-react";
 
+import { navGroups } from "@/lib/mock";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Readers", href: "#", icon: RadioTower },
-  { label: "Settings", href: "#", icon: Settings }
-];
 
 type DashboardSidebarProps = {
   collapsed: boolean;
@@ -17,29 +11,47 @@ export function DashboardSidebar({ collapsed }: DashboardSidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden h-screen flex-col border-r bg-card md:flex",
-        collapsed ? "w-[84px]" : "w-[260px]"
+        "hidden h-screen flex-col border-r bg-card/95 md:flex",
+        collapsed ? "w-[88px]" : "w-[278px]"
       )}
     >
-      <div className="flex h-16 items-center px-4">
-        <span className="text-sm font-semibold tracking-wide text-primary">
-          {collapsed ? "RF" : "RFID Admin"}
-        </span>
+      <div className="flex h-16 items-center border-b px-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
+          RF
+        </div>
+        {!collapsed && (
+          <div className="ml-3">
+            <p className="text-sm font-semibold">RFID Admin</p>
+            <p className="text-xs text-muted-foreground">Operations Console</p>
+          </div>
+        )}
       </div>
-      <nav className="space-y-2 p-3">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.label}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              href={item.href}
-            >
-              <Icon className="h-4 w-4" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
+
+      <nav className="flex-1 space-y-5 overflow-y-auto p-3">
+        {navGroups.map((group) => (
+          <section key={group.title}>
+            {!collapsed && (
+              <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {group.title}
+              </p>
+            )}
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </nav>
     </aside>
   );

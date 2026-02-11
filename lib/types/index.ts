@@ -1,2 +1,1 @@
-// Placeholder for shared TypeScript types.
-export {};
+export * from "./dashboard";
