@@ -1,0 +1,270 @@
+import type { LocalRequest } from "@/lib/types/request";
+
+export const localRequests: LocalRequest[] = [
+  {
+    id: "req-1001",
+    requestNumber: "REQ-2026-001",
+    warehouse: "Jakarta Hub",
+    customerCompany: "Kirana Retail",
+    email: "ops@kirana.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 14, 2026",
+    lastUpdate: "Jan 15, 2026 09:40",
+    status: "new"
+  },
+  {
+    id: "req-1002",
+    requestNumber: "REQ-2026-002",
+    warehouse: "Bandung DC",
+    customerCompany: "Sinar Abadi",
+    email: "logistics@sinarabadi.id",
+    requestType: "pickup",
+    requestDate: "Jan 14, 2026",
+    lastUpdate: "Jan 16, 2026 11:05",
+    status: "inprogress"
+  },
+  {
+    id: "req-1003",
+    requestNumber: "REQ-2026-003",
+    warehouse: "Surabaya Hub",
+    customerCompany: "Omega Elektrik",
+    email: "rfid@omegaelectric.com",
+    requestType: "delivery",
+    requestDate: "Jan 15, 2026",
+    lastUpdate: "Jan 18, 2026 16:20",
+    status: "processed"
+  },
+  {
+    id: "req-1004",
+    requestNumber: "REQ-2026-004",
+    warehouse: "Semarang Node",
+    customerCompany: "Mahkota Foods",
+    email: "warehouse@mahkotafoods.id",
+    requestType: "delivery",
+    isAdditional: true,
+    requestDate: "Jan 15, 2026",
+    lastUpdate: "Jan 19, 2026 14:12",
+    status: "inprogress"
+  },
+  {
+    id: "req-1005",
+    requestNumber: "REQ-2026-005",
+    warehouse: "Jakarta Hub",
+    customerCompany: "Atlas Fashion",
+    email: "procurement@atlasfshn.com",
+    requestType: "delivery",
+    requestDate: "Jan 16, 2026",
+    lastUpdate: "Jan 20, 2026 08:45",
+    status: "processed"
+  },
+  {
+    id: "req-1006",
+    requestNumber: "REQ-2026-006",
+    warehouse: "Medan DC",
+    customerCompany: "Nusa Farma",
+    email: "scm@nusafarma.id",
+    requestType: "pickup",
+    requestDate: "Jan 16, 2026",
+    lastUpdate: "Jan 20, 2026 10:18",
+    status: "inprogress"
+  },
+  {
+    id: "req-1007",
+    requestNumber: "REQ-2026-007",
+    warehouse: "Makassar Hub",
+    customerCompany: "Lestari Plastik",
+    email: "supply@lestariplastik.com",
+    requestType: "pickup",
+    requestDate: "Jan 17, 2026",
+    lastUpdate: "Jan 20, 2026 19:05",
+    status: "new"
+  },
+  {
+    id: "req-1008",
+    requestNumber: "REQ-2026-008",
+    warehouse: "Bandung DC",
+    customerCompany: "Tiga Karya",
+    email: "admin@tigakarya.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 17, 2026",
+    lastUpdate: "Jan 21, 2026 07:20",
+    status: "processed"
+  },
+  {
+    id: "req-1009",
+    requestNumber: "REQ-2026-009",
+    warehouse: "Jakarta Hub",
+    customerCompany: "Vira Cosmetics",
+    email: "ops@viracosmetics.com",
+    requestType: "pickup",
+    requestDate: "Jan 18, 2026",
+    lastUpdate: "Jan 21, 2026 12:50",
+    status: "inprogress"
+  },
+  {
+    id: "req-1010",
+    requestNumber: "REQ-2026-010",
+    warehouse: "Surabaya Hub",
+    customerCompany: "Roda Utama",
+    email: "order@rodautama.id",
+    requestType: "delivery",
+    requestDate: "Jan 18, 2026",
+    lastUpdate: "Jan 21, 2026 17:35",
+    status: "processed"
+  },
+  {
+    id: "req-1011",
+    requestNumber: "REQ-2026-011",
+    warehouse: "Semarang Node",
+    customerCompany: "Cakra Optima",
+    email: "rfid@cakraoptima.id",
+    requestType: "delivery",
+    requestDate: "Jan 19, 2026",
+    lastUpdate: "Jan 22, 2026 09:02",
+    status: "inprogress"
+  },
+  {
+    id: "req-1012",
+    requestNumber: "REQ-2026-012",
+    warehouse: "Medan DC",
+    customerCompany: "Harapan Motor",
+    email: "logistik@harapanmotor.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 19, 2026",
+    lastUpdate: "Jan 22, 2026 18:14",
+    status: "new"
+  },
+  {
+    id: "req-1013",
+    requestNumber: "REQ-2026-013",
+    warehouse: "Jakarta Hub",
+    customerCompany: "Sakura Living",
+    email: "warehouse@sakuraliving.id",
+    requestType: "pickup",
+    isAdditional: true,
+    requestDate: "Jan 20, 2026",
+    lastUpdate: "Jan 23, 2026 10:45",
+    status: "processed"
+  },
+  {
+    id: "req-1014",
+    requestNumber: "REQ-2026-014",
+    warehouse: "Bandung DC",
+    customerCompany: "Zenith Apparel",
+    email: "supply@zenithapparel.com",
+    requestType: "delivery",
+    requestDate: "Jan 20, 2026",
+    lastUpdate: "Jan 23, 2026 13:58",
+    status: "inprogress"
+  },
+  {
+    id: "req-1015",
+    requestNumber: "REQ-2026-015",
+    warehouse: "Surabaya Hub",
+    customerCompany: "Sentosa Steel",
+    email: "operations@sentosasteel.id",
+    requestType: "delivery",
+    requestDate: "Jan 21, 2026",
+    lastUpdate: "Jan 23, 2026 19:37",
+    status: "processed"
+  },
+  {
+    id: "req-1016",
+    requestNumber: "REQ-2026-016",
+    warehouse: "Makassar Hub",
+    customerCompany: "Angkasa Retail",
+    email: "rfid@angkasa.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 21, 2026",
+    lastUpdate: "Jan 24, 2026 09:10",
+    status: "inprogress"
+  },
+  {
+    id: "req-1017",
+    requestNumber: "REQ-2026-017",
+    warehouse: "Semarang Node",
+    customerCompany: "Sari Laut",
+    email: "logistik@sarilaut.id",
+    requestType: "pickup",
+    requestDate: "Jan 22, 2026",
+    lastUpdate: "Jan 24, 2026 14:25",
+    status: "new"
+  },
+  {
+    id: "req-1018",
+    requestNumber: "REQ-2026-018",
+    warehouse: "Medan DC",
+    customerCompany: "Prima Agro",
+    email: "admin@primaagro.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 22, 2026",
+    lastUpdate: "Jan 24, 2026 20:42",
+    status: "processed"
+  },
+  {
+    id: "req-1019",
+    requestNumber: "REQ-2026-019",
+    warehouse: "Jakarta Hub",
+    customerCompany: "Arjuna Tech",
+    email: "ops@arjunatech.id",
+    requestType: "pickup",
+    requestDate: "Jan 23, 2026",
+    lastUpdate: "Jan 25, 2026 08:05",
+    status: "processed"
+  },
+  {
+    id: "req-1020",
+    requestNumber: "REQ-2026-020",
+    warehouse: "Surabaya Hub",
+    customerCompany: "Bumi Energi",
+    email: "supply@bumienergi.co.id",
+    requestType: "delivery",
+    requestDate: "Jan 23, 2026",
+    lastUpdate: "Jan 25, 2026 11:52",
+    status: "inprogress"
+  },
+  {
+    id: "req-1021",
+    requestNumber: "REQ-2026-021",
+    warehouse: "Bandung DC",
+    customerCompany: "Nirmala Drinks",
+    email: "warehouse@nirmaladrinks.id",
+    requestType: "pickup",
+    requestDate: "Jan 24, 2026",
+    lastUpdate: "Jan 25, 2026 16:19",
+    status: "inprogress"
+  },
+  {
+    id: "req-1022",
+    requestNumber: "REQ-2026-022",
+    warehouse: "Makassar Hub",
+    customerCompany: "Bintang Rezeki",
+    email: "ops@bintangrezeki.id",
+    requestType: "delivery",
+    requestDate: "Jan 24, 2026",
+    lastUpdate: "Jan 26, 2026 09:33",
+    status: "processed"
+  },
+  {
+    id: "req-1023",
+    requestNumber: "REQ-2026-023",
+    warehouse: "Semarang Node",
+    customerCompany: "Daya Optima",
+    email: "logistics@dayaoptima.com",
+    requestType: "pickup",
+    requestDate: "Jan 25, 2026",
+    lastUpdate: "Jan 26, 2026 12:10",
+    status: "new"
+  },
+  {
+    id: "req-1024",
+    requestNumber: "REQ-2026-024",
+    warehouse: "Medan DC",
+    customerCompany: "Lautan Biru",
+    email: "warehouse@lautanbiru.id",
+    requestType: "delivery",
+    requestDate: "Jan 25, 2026",
+    lastUpdate: "Jan 26, 2026 15:44",
+    status: "processed"
+  }
+];

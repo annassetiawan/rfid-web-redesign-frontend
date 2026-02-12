@@ -33,11 +33,8 @@ export const navGroups: NavGroup[] = [
       { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
       {
         label: "Request",
-        href: "#",
-        icon: GitPullRequest,
-        expanded: true,
-        hasChevron: true,
-        children: [{ label: "Local", href: "#" }]
+        href: "/requests/local",
+        icon: GitPullRequest
       },
       { label: "Unit", href: "#", icon: Server, hasChevron: true },
       { label: "Search", href: "#", icon: Search },

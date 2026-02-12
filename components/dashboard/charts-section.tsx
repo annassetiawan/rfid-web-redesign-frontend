@@ -1,48 +1,61 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AreaTrendChart } from "@/components/dashboard/area-trend-chart";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trends } from "@/lib/mock";
 
-function TrendBars({ values }: { values: number[] }) {
-  const max = Math.max(...values);
-
-  return (
-    <div className="flex h-40 items-end gap-2">
-      {values.map((value, index) => {
-        const height = Math.max(8, Math.round((value / max) * 100));
-
-        return (
-          <div key={`${value}-${index}`} className="flex flex-1 flex-col items-center gap-2">
-            <div className="w-full rounded bg-primary/85" style={{ height: `${height}%` }} />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function ChartsSection() {
+  const combinedTrend = trends[0].points.map((point, index) => ({
+    day: point.day,
+    delivery: point.value,
+    pickup: trends[1]?.points[index]?.value ?? 0
+  }));
+
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Trend Charts</h2>
-        <p className="text-sm text-muted-foreground">Seven-day movement for delivery and pickup activity.</p>
-      </div>
+      <AreaTrendChart
+        title="Trend Overview"
+        subtitle="Delivery vs pickup volume"
+        data={combinedTrend}
+        seriesKeys={["delivery", "pickup"]}
+        config={{
+          delivery: { label: "Delivery", color: "hsl(var(--chart-1))" },
+          pickup: { label: "Pickup", color: "hsl(var(--chart-2))" }
+        }}
+        headerRight={(
+          <Tabs defaultValue="7d" className="w-full md:w-auto">
+            <TabsList className="h-9 w-full md:w-auto">
+              <TabsTrigger value="7d" className="text-xs">
+                Last 7 days
+              </TabsTrigger>
+              <TabsTrigger value="30d" className="text-xs">
+                30 days
+              </TabsTrigger>
+              <TabsTrigger value="90d" className="text-xs">
+                3 months
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+      />
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {trends.map((series) => (
-          <Card key={series.title}>
-            <CardHeader>
-              <CardTitle>{series.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrendBars values={series.points.map((point) => point.value)} />
-              <div className="mt-3 grid grid-cols-7 text-center text-xs text-muted-foreground">
-                {series.points.map((point) => (
-                  <span key={`${series.title}-${point.day}`}>{point.day}</span>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <AreaTrendChart
+          title="Delivery Trend"
+          subtitle="Last 7 days"
+          data={trends[0].points.map((point) => ({ day: point.day, delivery: point.value }))}
+          seriesKeys={["delivery"]}
+          config={{
+            delivery: { label: "Delivery", color: "hsl(var(--chart-1))" }
+          }}
+        />
+        <AreaTrendChart
+          title="Pickup Trend"
+          subtitle="Last 7 days"
+          data={trends[1].points.map((point) => ({ day: point.day, pickup: point.value }))}
+          seriesKeys={["pickup"]}
+          config={{
+            pickup: { label: "Pickup", color: "hsl(var(--chart-2))" }
+          }}
+        />
       </div>
     </section>
   );
