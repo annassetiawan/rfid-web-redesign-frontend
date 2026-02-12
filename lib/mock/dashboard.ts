@@ -36,7 +36,18 @@ export const navGroups: NavGroup[] = [
         href: "/requests/local",
         icon: GitPullRequest
       },
-      { label: "Unit", href: "#", icon: Server, hasChevron: true },
+      {
+        label: "Unit",
+        href: "#",
+        icon: Server,
+        expanded: true,
+        hasChevron: true,
+        children: [
+          { label: "Inventory", href: "/inventory" },
+          { label: "Master Data", href: "#" },
+          { label: "Unit Relation", href: "#" }
+        ]
+      },
       { label: "Search", href: "#", icon: Search },
       { label: "Cycle Count", href: "#", icon: Package },
       { label: "Customer", href: "#", icon: Users },

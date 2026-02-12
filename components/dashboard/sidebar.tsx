@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -16,27 +17,29 @@ type DashboardSidebarProps = {
 type SidebarNavItemProps = {
   item: NavItem;
   collapsed: boolean;
+  isExpanded: boolean;
+  onToggle: (label: string) => void;
 };
 
-function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
+function SidebarNavItem({ item, collapsed, isExpanded, onToggle }: SidebarNavItemProps) {
   const pathname = usePathname();
   const Icon = item.icon;
-  const isExpanded = Boolean(item.expanded && item.children?.length);
   const isActive =
     item.href !== "#" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const hasChildren = Boolean(item.children?.length);
 
   return (
     <div className="flex flex-col gap-1">
-      <Button
-        asChild
-        className={cn(
-          "h-11 w-full rounded-none text-sm text-slate-600 hover:text-slate-700",
-          collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3",
-          (isActive || isExpanded) && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
-        )}
-        variant="ghost"
-      >
-        <Link href={item.href}>
+      {hasChildren ? (
+        <Button
+          className={cn(
+            "h-11 w-full rounded-none text-sm text-slate-600 hover:text-slate-700",
+            collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3",
+            isActive && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
+          )}
+          variant="ghost"
+          onClick={() => onToggle(item.label)}
+        >
           <span className="grid h-9 w-9 shrink-0 place-items-center">
             <Icon className="h-5 w-5" />
           </span>
@@ -50,21 +53,54 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
               )}
             </span>
           )}
-        </Link>
-      </Button>
+        </Button>
+      ) : (
+        <Button
+          asChild
+          className={cn(
+            "h-11 w-full rounded-none text-sm text-slate-600 hover:text-slate-700",
+            collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3",
+            isActive && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
+          )}
+          variant="ghost"
+        >
+          <Link href={item.href}>
+            <span className="grid h-9 w-9 shrink-0 place-items-center">
+              <Icon className="h-5 w-5" />
+            </span>
+            {!collapsed && <span className="truncate font-medium">{item.label}</span>}
+            {!collapsed && item.hasChevron && (
+              <span className="ml-auto grid h-5 w-5 place-items-center">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                )}
+              </span>
+            )}
+          </Link>
+        </Button>
+      )}
 
       {!collapsed && isExpanded && (
-        <div className="bg-indigo-50/60 px-3 py-1.5">
-          {item.children?.map((child) => (
-            <Button
-              key={child.label}
-              asChild
-              className="h-10 w-full justify-start rounded-none px-9 text-sm font-medium text-indigo-600 hover:bg-transparent hover:text-indigo-600"
-              variant="ghost"
-            >
-              <Link href={child.href}>{child.label}</Link>
-            </Button>
-          ))}
+        <div className="px-3 py-1.5">
+          {item.children?.map((child) => {
+            const isChildActive =
+              child.href !== "#" && (pathname === child.href || pathname.startsWith(`${child.href}/`));
+            return (
+              <Button
+                key={child.label}
+                asChild
+                className={cn(
+                  "h-10 w-full justify-start rounded-none px-9 text-sm font-medium text-slate-600 hover:bg-transparent hover:text-slate-700",
+                  isChildActive && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
+                )}
+                variant="ghost"
+              >
+                <Link href={child.href}>{child.label}</Link>
+              </Button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -72,6 +108,22 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
 }
 
 export function DashboardSidebar({ collapsed }: DashboardSidebarProps) {
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navGroups.forEach((group) => {
+      group.items.forEach((item) => {
+        if (item.expanded) {
+          initial[item.label] = true;
+        }
+      });
+    });
+    return initial;
+  });
+
+  const handleToggle = (label: string) => {
+    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
   return (
     <aside
       className={cn(
@@ -101,7 +153,13 @@ export function DashboardSidebar({ collapsed }: DashboardSidebarProps) {
             )}
             <div className="flex flex-col gap-1">
               {group.items.map((item) => (
-                <SidebarNavItem key={item.label} collapsed={collapsed} item={item} />
+                <SidebarNavItem
+                  key={item.label}
+                  collapsed={collapsed}
+                  item={item}
+                  isExpanded={Boolean(openGroups[item.label])}
+                  onToggle={handleToggle}
+                />
               ))}
             </div>
           </section>
