@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { kpiCards } from "@/lib/mock";
 
@@ -13,16 +14,29 @@ export function KpiSection() {
         {kpiCards.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <Card key={kpi.title} className="shadow-sm">
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm text-muted-foreground">{kpi.title}</CardTitle>
-                <span className="rounded-md bg-primary/10 p-2 text-primary">
+            <Card
+              key={kpi.title}
+              className="border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md"
+            >
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+                <div className="space-y-2">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {kpi.title}
+                  </CardTitle>
+                  <Badge variant="secondary" className="w-fit text-[11px]">
+                    +12%
+                  </Badge>
+                </div>
+                <span className="rounded-md border border-border/60 bg-muted/40 p-2 text-foreground">
                   <Icon className="h-4 w-4" />
                 </span>
               </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold tracking-tight">{kpi.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{kpi.description}</p>
+              <CardContent className="space-y-2">
+                <p className="text-3xl font-semibold tracking-tight text-foreground">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground">{kpi.description}</p>
+                <div className="h-1 w-full overflow-hidden rounded-full bg-muted/60">
+                  <div className="h-full w-2/3 rounded-full bg-primary/60" />
+                </div>
               </CardContent>
             </Card>
           );

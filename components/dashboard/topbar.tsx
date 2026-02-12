@@ -28,19 +28,23 @@ type DashboardTopbarProps = {
 
 export function DashboardTopbar({ onToggleSidebar }: DashboardTopbarProps) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-      <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-2 md:px-6">
+    <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center gap-3 px-4 md:px-6">
         <Button onClick={onToggleSidebar} size="icon" variant="ghost">
           <SlidersHorizontal className="h-5 w-5" />
           <span className="sr-only">Toggle sidebar</span>
         </Button>
 
-        <div className="relative min-w-[240px] flex-1 md:max-w-md">
+        <div className="relative hidden flex-1 sm:block md:max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-9" placeholder="Search requests, labels, accessories..." />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
+          <div className="relative flex-1 sm:hidden">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input className="h-9 pl-9" placeholder="Search..." />
+          </div>
           <Select defaultValue={dateRangeOptions[1]}>
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Select range" />

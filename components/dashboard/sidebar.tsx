@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,8 +19,11 @@ type SidebarNavItemProps = {
 };
 
 function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
+  const pathname = usePathname();
   const Icon = item.icon;
   const isExpanded = Boolean(item.expanded && item.children?.length);
+  const isActive =
+    item.href !== "#" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
 
   return (
     <div className="flex flex-col gap-1">
@@ -26,7 +32,7 @@ function SidebarNavItem({ item, collapsed }: SidebarNavItemProps) {
         className={cn(
           "h-11 w-full rounded-none text-sm text-slate-600 hover:text-slate-700",
           collapsed ? "justify-center gap-0 px-0" : "justify-start gap-2 px-3",
-          isExpanded && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
+          (isActive || isExpanded) && "bg-indigo-50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600"
         )}
         variant="ghost"
       >
@@ -104,3 +110,4 @@ export function DashboardSidebar({ collapsed }: DashboardSidebarProps) {
     </aside>
   );
 }
+
