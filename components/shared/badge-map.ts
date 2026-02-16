@@ -5,6 +5,7 @@ import type { CycleCountItemScanStatus } from "@/lib/types/cycle-count-item";
 import type { ScannerState } from "@/lib/types/scanner";
 import type { LogisticEmailType } from "@/lib/types/logisticEmail";
 import type { UserRole, UserStatus } from "@/lib/types/user";
+import type { TicketPriority, TicketStatus, TicketType } from "@/lib/types/ticket";
 
 export const statusBadgeClass: Record<MasterUnitStatus, string> = {
   active: "bg-emerald-50 text-emerald-700",
@@ -67,4 +68,24 @@ export const userRoleBadgeClass: Record<UserRole, string> = {
 export const userStatusBadgeClass: Record<UserStatus, string> = {
   active: "bg-emerald-50 text-emerald-700",
   inactive: "bg-slate-100 text-slate-600"
+};
+
+export const ticketStatusBadgeClass: Record<TicketStatus, string> = {
+  open: "bg-blue-100 text-blue-700",
+  "in-progress": "bg-amber-100 text-amber-700",
+  resolved: "bg-emerald-100 text-emerald-700",
+  closed: "bg-slate-100 text-slate-700"
+};
+
+export const ticketPriorityBadgeClass: Record<TicketPriority, string> = {
+  low: "bg-slate-100 text-slate-700",
+  medium: "bg-blue-100 text-blue-700",
+  high: "bg-orange-100 text-orange-700",
+  urgent: "bg-rose-100 text-rose-700"
+};
+
+export const ticketTypeBadgeClass: Record<TicketType, string> = {
+  bug: "bg-rose-100 text-rose-700",
+  request: "bg-indigo-100 text-indigo-700",
+  question: "bg-sky-100 text-sky-700"
 };
