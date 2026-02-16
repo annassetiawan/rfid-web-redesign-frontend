@@ -2,6 +2,7 @@ import type { MasterUnitCategory, MasterUnitStatus } from "@/lib/types/master-un
 import type { RequestStatus, RequestType } from "@/lib/types/request";
 import type { CycleCountCategory, CycleCountStatus } from "@/lib/types/cycle-count";
 import type { CycleCountItemScanStatus } from "@/lib/types/cycle-count-item";
+import type { ScannerState } from "@/lib/types/scanner";
 
 export const statusBadgeClass: Record<MasterUnitStatus, string> = {
   active: "bg-emerald-50 text-emerald-700",
@@ -41,4 +42,11 @@ export const cycleCountItemScanStatusBadgeClass: Record<CycleCountItemScanStatus
   scanned: "bg-emerald-100 text-emerald-700",
   unscanned: "bg-amber-100 text-amber-700",
   untagged: "bg-rose-100 text-rose-700"
+};
+
+export const scannerStateBadgeClass: Record<ScannerState, string> = {
+  working: "bg-emerald-100 text-emerald-700",
+  new: "bg-indigo-100 text-indigo-700",
+  faulty: "bg-rose-100 text-rose-700",
+  test: "bg-amber-100 text-amber-700"
 };
