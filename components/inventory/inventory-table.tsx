@@ -80,6 +80,14 @@ const locationLabel: Record<InventoryItem["location"], string> = {
   customer_site: "Customer Site"
 };
 
+const isAccessoryResolved = (
+  item: InventoryResolved | AccessoryResolved
+): item is AccessoryResolved => "groupedWith" in item;
+
+const isProductResolved = (
+  item: InventoryResolved | AccessoryResolved
+): item is InventoryResolved => !isAccessoryResolved(item);
+
 export function InventoryTable({
   items,
   type,
@@ -90,9 +98,17 @@ export function InventoryTable({
   onPageSizeChange
 }: InventoryTableProps) {
   const [selectedItem, setSelectedItem] = React.useState<InventoryResolved | AccessoryResolved | null>(null);
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  const visibleItems = React.useMemo(() => {
+    if (type === "accessory") {
+      return items.filter(isAccessoryResolved);
+    }
+
+    return items.filter(isProductResolved);
+  }, [items, type]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleItems.length / pageSize));
   const clampedPageIndex = Math.min(pageIndex, totalPages);
-  const pagedItems = items.slice((clampedPageIndex - 1) * pageSize, clampedPageIndex * pageSize);
+  const pagedItems = visibleItems.slice((clampedPageIndex - 1) * pageSize, clampedPageIndex * pageSize);
   const { rowClass, cellClass, badgeClass, actionBtnClass } = getDensityClasses(density);
 
   return (
@@ -168,17 +184,15 @@ export function InventoryTable({
                     {stagingLabel[selectedItem.stagingStatus]}
                   </Badge>
                 </div>
-                {type === "accessory" && (
+                {type === "accessory" && selectedItem && isAccessoryResolved(selectedItem) && (
                   <>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-slate-400">Main Unit</p>
-                      <p className="font-medium text-slate-900">
-                        {(selectedItem as AccessoryResolved).mainUnit?.name ?? "Unknown"}
-                      </p>
+                      <p className="font-medium text-slate-900">{selectedItem.mainUnit?.name ?? "Unknown"}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-slate-400">Grouped With</p>
-                      <p className="font-medium text-slate-900">{(selectedItem as Accessory).groupedWith}</p>
+                      <p className="font-medium text-slate-900">{selectedItem.groupedWith || "-"}</p>
                     </div>
                   </>
                 )}
@@ -230,10 +244,12 @@ export function InventoryTable({
               <TableCell className={`${cellClass} font-medium text-foreground`}>{item.unit.name}</TableCell>
               <TableCell className={cellClass}>{item.serialNumber}</TableCell>
               <TableCell className={cellClass}>{item.rfidCode}</TableCell>
-              {type === "accessory" && (
-                <TableCell className={cellClass}>{(item as AccessoryResolved).mainUnit?.name ?? "Unknown"}</TableCell>
+              {type === "accessory" && isAccessoryResolved(item) && (
+                <TableCell className={cellClass}>{item.mainUnit?.name ?? "Unknown"}</TableCell>
               )}
-              {type === "accessory" && <TableCell className={cellClass}>{(item as Accessory).groupedWith}</TableCell>}
+              {type === "accessory" && isAccessoryResolved(item) && (
+                <TableCell className={cellClass}>{item.groupedWith || "-"}</TableCell>
+              )}
               <TableCell className={cellClass}>
                 <Badge className={`${inventoryStatusBadge[item.inventoryStatus]} ${badgeClass}`}>
                   {inventoryStatusLabel[item.inventoryStatus]}
@@ -284,7 +300,7 @@ export function InventoryTable({
       <PaginationFooter
         pageSize={pageSize}
         pageIndex={pageIndex}
-        totalCount={items.length}
+        totalCount={visibleItems.length}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
       />
