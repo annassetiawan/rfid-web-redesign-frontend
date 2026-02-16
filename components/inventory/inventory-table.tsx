@@ -15,21 +15,28 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { Accessory, InventoryItem, Product } from "@/lib/types/inventory";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import type { MasterUnit } from "@/lib/types/master-unit";
+import { categoryBadgeClass, statusBadgeClass } from "@/components/shared/badge-map";
+import { getDensityClasses, type DensityMode } from "@/components/shared/use-density";
+import { PaginationFooter } from "@/components/shared/pagination-footer";
+
+type InventoryResolved = Product & {
+  unit: MasterUnit;
+};
+
+type AccessoryResolved = Accessory & {
+  unit: MasterUnit;
+  mainUnit?: MasterUnit;
+};
 
 type InventoryTableProps = {
-  items: Product[] | Accessory[];
+  items: InventoryResolved[] | AccessoryResolved[];
   type: "product" | "accessory";
-  density?: "compact" | "comfortable";
+  density?: DensityMode;
   pageSize: number;
   pageIndex: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-};
-
-const statusBadge: Record<InventoryItem["status"], string> = {
-  active: "bg-emerald-50 text-emerald-700",
-  inactive: "bg-slate-100 text-slate-600"
 };
 
 const inventoryStatusLabel: Record<InventoryItem["inventoryStatus"], string> = {
@@ -82,14 +89,11 @@ export function InventoryTable({
   onPageChange,
   onPageSizeChange
 }: InventoryTableProps) {
-  const [selectedItem, setSelectedItem] = React.useState<InventoryItem | Accessory | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<InventoryResolved | AccessoryResolved | null>(null);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const clampedPageIndex = Math.min(pageIndex, totalPages);
   const pagedItems = items.slice((clampedPageIndex - 1) * pageSize, clampedPageIndex * pageSize);
-  const rowClassName = density === "compact" ? "h-9" : "h-11";
-  const cellClassName = density === "compact" ? "px-2 py-1 text-xs" : "px-3 py-2 text-sm";
-  const badgeClassName = density === "compact" ? "h-5 px-2 text-[11px]" : "h-6 px-2.5 text-xs";
-  const actionBtnClassName = density === "compact" ? "h-8 w-8" : "h-9 w-9";
+  const { rowClass, cellClass, badgeClass, actionBtnClass } = getDensityClasses(density);
 
   return (
     <div className="rounded-lg border border-border/60">
@@ -98,12 +102,33 @@ export function InventoryTable({
           {selectedItem && (
             <>
               <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  {selectedItem.name}
-                  <Badge variant="secondary" className="text-[11px] uppercase tracking-wide">
-                    {type === "product" ? "Product" : "Accessory"}
-                  </Badge>
-                </SheetTitle>
+                <div className="flex items-start gap-4">
+                  {selectedItem.unit.imageUrl ? (
+                    <img
+                      src={selectedItem.unit.imageUrl}
+                      alt={selectedItem.unit.name}
+                      className="h-14 w-14 rounded-lg border border-border/60 object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border/60 bg-muted text-sm font-semibold text-muted-foreground">
+                      {selectedItem.unit.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <SheetTitle className="flex items-center gap-2">
+                      {selectedItem.unit.name}
+                      <Badge variant="secondary" className="text-[11px] uppercase tracking-wide">
+                        {type === "product" ? "Product" : "Accessory"}
+                      </Badge>
+                    </SheetTitle>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Badge className={categoryBadgeClass[selectedItem.unit.category]}>
+                        {selectedItem.unit.category === "main" ? "Main Product" : "Accessory"}
+                      </Badge>
+                      <Badge className={statusBadgeClass[selectedItem.status]}>{selectedItem.status}</Badge>
+                    </div>
+                  </div>
+                </div>
               </SheetHeader>
 
               <div className="grid gap-5 text-sm text-slate-600 md:grid-cols-2">
@@ -125,7 +150,7 @@ export function InventoryTable({
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-wide text-slate-400">Status</p>
-                  <Badge className={statusBadge[selectedItem.status]}>{selectedItem.status}</Badge>
+                  <Badge className={statusBadgeClass[selectedItem.status]}>{selectedItem.status}</Badge>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-wide text-slate-400">Tagged Date</p>
@@ -147,7 +172,9 @@ export function InventoryTable({
                   <>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-slate-400">Main Unit</p>
-                      <p className="font-medium text-slate-900">{(selectedItem as Accessory).mainUnit}</p>
+                      <p className="font-medium text-slate-900">
+                        {(selectedItem as AccessoryResolved).mainUnit?.name ?? "Unknown"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-slate-400">Grouped With</p>
@@ -177,62 +204,64 @@ export function InventoryTable({
 
       <Table>
         <TableHeader className="sticky top-0 bg-card/95">
-          <TableRow className={rowClassName}>
-            <TableHead className={cellClassName}>Name</TableHead>
-            <TableHead className={cellClassName}>Serial Number</TableHead>
-            <TableHead className={cellClassName}>RFID Code</TableHead>
-            {type === "accessory" && <TableHead className={cellClassName}>Main Unit</TableHead>}
-            {type === "accessory" && <TableHead className={cellClassName}>Grouped With</TableHead>}
-            <TableHead className={cellClassName}>Inventory Status</TableHead>
-            <TableHead className={cellClassName}>Location</TableHead>
-            <TableHead className={cellClassName}>Condition</TableHead>
-            <TableHead className={cellClassName}>Staging Status</TableHead>
-            <TableHead className={cellClassName}>Warehouse Location</TableHead>
-            <TableHead className={cellClassName}>Tagged Date</TableHead>
-            <TableHead className={cellClassName}>Status</TableHead>
-            <TableHead className={`${cellClassName} text-right`}>Actions</TableHead>
+          <TableRow className={rowClass}>
+            <TableHead className={cellClass}>Name</TableHead>
+            <TableHead className={cellClass}>Serial Number</TableHead>
+            <TableHead className={cellClass}>RFID Code</TableHead>
+            {type === "accessory" && <TableHead className={cellClass}>Main Unit</TableHead>}
+            {type === "accessory" && <TableHead className={cellClass}>Grouped With</TableHead>}
+            <TableHead className={cellClass}>Inventory Status</TableHead>
+            <TableHead className={cellClass}>Location</TableHead>
+            <TableHead className={cellClass}>Condition</TableHead>
+            <TableHead className={cellClass}>Staging Status</TableHead>
+            <TableHead className={cellClass}>Warehouse Location</TableHead>
+            <TableHead className={cellClass}>Tagged Date</TableHead>
+            <TableHead className={cellClass}>Status</TableHead>
+            <TableHead className={`${cellClass} text-right`}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {pagedItems.map((item) => (
             <TableRow
               key={item.id}
-              className={`${rowClassName} cursor-pointer hover:bg-muted/40`}
+              className={`${rowClass} cursor-pointer hover:bg-muted/40`}
               onClick={() => setSelectedItem(item)}
             >
-              <TableCell className={`${cellClassName} font-medium text-foreground`}>{item.name}</TableCell>
-              <TableCell className={cellClassName}>{item.serialNumber}</TableCell>
-              <TableCell className={cellClassName}>{item.rfidCode}</TableCell>
-              {type === "accessory" && <TableCell className={cellClassName}>{(item as Accessory).mainUnit}</TableCell>}
-              {type === "accessory" && <TableCell className={cellClassName}>{(item as Accessory).groupedWith}</TableCell>}
-              <TableCell className={cellClassName}>
-                <Badge className={`${inventoryStatusBadge[item.inventoryStatus]} ${badgeClassName}`}>
+              <TableCell className={`${cellClass} font-medium text-foreground`}>{item.unit.name}</TableCell>
+              <TableCell className={cellClass}>{item.serialNumber}</TableCell>
+              <TableCell className={cellClass}>{item.rfidCode}</TableCell>
+              {type === "accessory" && (
+                <TableCell className={cellClass}>{(item as AccessoryResolved).mainUnit?.name ?? "Unknown"}</TableCell>
+              )}
+              {type === "accessory" && <TableCell className={cellClass}>{(item as Accessory).groupedWith}</TableCell>}
+              <TableCell className={cellClass}>
+                <Badge className={`${inventoryStatusBadge[item.inventoryStatus]} ${badgeClass}`}>
                   {inventoryStatusLabel[item.inventoryStatus]}
                 </Badge>
               </TableCell>
-              <TableCell className={cellClassName}>{locationLabel[item.location]}</TableCell>
-              <TableCell className={cellClassName}>
-                <Badge className={`${conditionBadge[item.condition]} ${badgeClassName}`}>
+              <TableCell className={cellClass}>{locationLabel[item.location]}</TableCell>
+              <TableCell className={cellClass}>
+                <Badge className={`${conditionBadge[item.condition]} ${badgeClass}`}>
                   {conditionLabel[item.condition]}
                 </Badge>
               </TableCell>
-              <TableCell className={cellClassName}>
-                <Badge className={`${stagingBadge[item.stagingStatus]} ${badgeClassName}`}>
+              <TableCell className={cellClass}>
+                <Badge className={`${stagingBadge[item.stagingStatus]} ${badgeClass}`}>
                   {stagingLabel[item.stagingStatus]}
                 </Badge>
               </TableCell>
-              <TableCell className={cellClassName}>{item.warehouseLocation}</TableCell>
-              <TableCell className={cellClassName}>{item.taggedDate}</TableCell>
-              <TableCell className={cellClassName}>
-                <Badge className={`${statusBadge[item.status]} ${badgeClassName}`}>{item.status}</Badge>
+              <TableCell className={cellClass}>{item.warehouseLocation}</TableCell>
+              <TableCell className={cellClass}>{item.taggedDate}</TableCell>
+              <TableCell className={cellClass}>
+                <Badge className={`${statusBadgeClass[item.status]} ${badgeClass}`}>{item.status}</Badge>
               </TableCell>
-              <TableCell className={`${cellClassName} text-right`}>
+              <TableCell className={`${cellClass} text-right`}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={actionBtnClassName}
+                      className={actionBtnClass}
                       onClick={(event) => event.stopPropagation()}
                     >
                       <MoreHorizontal className="h-4 w-4" />
@@ -252,39 +281,13 @@ export function InventoryTable({
         </TableBody>
       </Table>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span>Rows per page</span>
-          <select
-            className="h-8 rounded-md border border-border/60 bg-background px-2 text-sm text-foreground"
-            value={pageSize}
-            onChange={(event) => onPageSizeChange(Number(event.target.value))}
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-        <Pagination className="mx-0 w-auto">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                disabled={clampedPageIndex === 1}
-                onClick={() => onPageChange(Math.max(1, clampedPageIndex - 1))}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink isActive>{clampedPageIndex}</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                disabled={clampedPageIndex === totalPages}
-                onClick={() => onPageChange(Math.min(totalPages, clampedPageIndex + 1))}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      <PaginationFooter
+        pageSize={pageSize}
+        pageIndex={pageIndex}
+        totalCount={items.length}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   );
 }

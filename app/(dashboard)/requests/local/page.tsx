@@ -2,23 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  Download,
-  Filter,
-  Plus,
-  SlidersHorizontal,
-  Columns3,
-  RefreshCw,
-  Search,
-  MoreHorizontal,
-  ArrowUpDown
-} from "lucide-react";
+import { Download, Filter, Plus, SlidersHorizontal, Columns3, MoreHorizontal, ArrowUpDown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -26,12 +17,18 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/shared/page-header";
+import { TableToolbar } from "@/components/shared/table-toolbar";
+import { PaginationFooter } from "@/components/shared/pagination-footer";
+import { requestStatusBadgeClass, requestTypeBadgeClass } from "@/components/shared/badge-map";
+import { useColumnVisibility } from "@/components/shared/use-column-visibility";
+import { useDensity } from "@/components/shared/use-density";
 import { localRequests } from "@/lib/mock/requests";
 import type { LocalRequest, RequestStatus, RequestType } from "@/lib/types/request";
 
@@ -42,20 +39,9 @@ const statusLabel: Record<RequestStatus, string> = {
   processed: "Processed"
 };
 
-const statusBadgeClass: Record<RequestStatus, string> = {
-  new: "bg-amber-100 text-amber-700",
-  inprogress: "bg-blue-100 text-blue-700",
-  processed: "bg-emerald-100 text-emerald-700"
-};
-
 const typeLabel: Record<RequestType, string> = {
   delivery: "Delivery",
   pickup: "Pickup"
-};
-
-const typeBadgeClass: Record<RequestType, string> = {
-  delivery: "bg-emerald-50 text-emerald-700",
-  pickup: "bg-blue-50 text-blue-700"
 };
 
 const historyItems = [
@@ -73,8 +59,15 @@ type FilterState = {
   status: "all" | RequestStatus;
   dateFrom: string;
   dateTo: string;
+  lastUpdateFrom: string;
+  lastUpdateTo: string;
   customerCompany: string;
   email: string;
+};
+
+type ColumnVisibility = {
+  email: boolean;
+  requestDate: boolean;
 };
 
 const defaultFilters: FilterState = {
@@ -83,6 +76,8 @@ const defaultFilters: FilterState = {
   status: "all",
   dateFrom: "",
   dateTo: "",
+  lastUpdateFrom: "",
+  lastUpdateTo: "",
   customerCompany: "",
   email: ""
 };
@@ -92,6 +87,11 @@ const warehouseOptions = ["Jakarta Hub", "Bandung DC", "Surabaya Hub", "Semarang
 export default function LocalRequestsPage() {
   const [filters, setFilters] = React.useState<FilterState>(defaultFilters);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const { density, setDensity, rowClass, cellClass, badgeClass, actionBtnClass } = useDensity("comfortable");
+  const { columns: visibleColumns, setColumns: setVisibleColumns } = useColumnVisibility<ColumnVisibility>(
+    "columns:requests",
+    { email: false, requestDate: false }
+  );
   const [pageSize, setPageSize] = React.useState(10);
   const [pageIndex, setPageIndex] = React.useState(1);
   const [sortKey, setSortKey] = React.useState<SortKey>("requestDate");
@@ -141,17 +141,29 @@ export default function LocalRequestsPage() {
           return false;
         }
       }
+      if (filters.lastUpdateFrom) {
+        const from = new Date(filters.lastUpdateFrom);
+        const updatedAt = new Date(request.lastUpdate);
+        if (updatedAt < from) {
+          return false;
+        }
+      }
+      if (filters.lastUpdateTo) {
+        const to = new Date(filters.lastUpdateTo);
+        const updatedAt = new Date(request.lastUpdate);
+        if (updatedAt > to) {
+          return false;
+        }
+      }
       return true;
     });
   }, [filters, searchQuery]);
 
   const sortedRequests = React.useMemo(() => {
     const statusOrder: Record<RequestStatus, number> = {
-      urgent: 0,
-      new: 1,
-      inprogress: 2,
-      processed: 3,
-      cancelled: 4
+      new: 0,
+      inprogress: 1,
+      processed: 2
     };
 
     return [...filteredRequests].sort((a, b) => {
@@ -175,6 +187,8 @@ export default function LocalRequestsPage() {
     const start = (clampedPageIndex - 1) * pageSize;
     return sortedRequests.slice(start, start + pageSize);
   }, [clampedPageIndex, pageSize, sortedRequests]);
+
+  const emptyColSpan = 7 + (visibleColumns.email ? 1 : 0) + (visibleColumns.requestDate ? 1 : 0);
 
   const activeFilterCount = React.useMemo(() => {
     return Object.entries(filters).reduce((count, [key, value]) => {
@@ -203,20 +217,6 @@ export default function LocalRequestsPage() {
     setSelectedRequest(request);
   };
 
-  const getPageNumbers = () => {
-    if (totalPages <= 5) {
-      return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
-    const pages = new Set<number>([1, totalPages, clampedPageIndex]);
-    if (clampedPageIndex > 2) {
-      pages.add(clampedPageIndex - 1);
-    }
-    if (clampedPageIndex < totalPages - 1) {
-      pages.add(clampedPageIndex + 1);
-    }
-    return Array.from(pages).sort((a, b) => a - b);
-  };
-
   React.useEffect(() => {
     const timeout = setTimeout(() => setIsLoading(false), 400);
     return () => clearTimeout(timeout);
@@ -224,7 +224,7 @@ export default function LocalRequestsPage() {
 
   React.useEffect(() => {
     setPageIndex(1);
-  }, [pageSize, filters, sortKey, sortDirection]);
+  }, [pageSize, filters, sortKey, sortDirection, searchQuery, density]);
 
   React.useEffect(() => {
     setCurrentTime(new Date().toLocaleString("en-US"));
@@ -233,7 +233,7 @@ export default function LocalRequestsPage() {
   return (
     <div className="flex flex-col gap-6">
       <Sheet open={Boolean(selectedRequest)} onOpenChange={(open) => !open && setSelectedRequest(null)}>
-        <SheetContent className="flex flex-col gap-6">
+        <SheetContent className="flex flex-col gap-6 px-6 pb-6 pt-4">
           <SheetHeader>
             <SheetTitle>Request Details</SheetTitle>
             <SheetDescription>Overview of the selected local request.</SheetDescription>
@@ -248,10 +248,10 @@ export default function LocalRequestsPage() {
                     <p className="text-lg font-semibold text-slate-900">{selectedRequest.requestNumber}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={typeBadgeClass[selectedRequest.requestType]}>
+                    <Badge className={requestTypeBadgeClass[selectedRequest.requestType]}>
                       {typeLabel[selectedRequest.requestType]}
                     </Badge>
-                    <Badge className={statusBadgeClass[selectedRequest.status]}>
+                    <Badge className={requestStatusBadgeClass[selectedRequest.status]}>
                       {statusLabel[selectedRequest.status]}
                     </Badge>
                   </div>
@@ -359,6 +359,29 @@ export default function LocalRequestsPage() {
                   ))}
                 </div>
               </div>
+
+              <Tabs defaultValue="summary" className="space-y-3">
+                <TabsList className="w-fit">
+                  <TabsTrigger value="summary">Summary</TabsTrigger>
+                  <TabsTrigger value="units">Units</TabsTrigger>
+                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                </TabsList>
+                <TabsContent value="summary">
+                  <div className="rounded-lg border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
+                    Summary details will appear here.
+                  </div>
+                </TabsContent>
+                <TabsContent value="units">
+                  <div className="rounded-lg border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
+                    Unit details will appear here.
+                  </div>
+                </TabsContent>
+                <TabsContent value="timeline">
+                  <div className="rounded-lg border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
+                    Timeline events will appear here.
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 
@@ -369,203 +392,238 @@ export default function LocalRequestsPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Requests</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Local Request List</h1>
-          <p className="text-sm text-slate-500" suppressHydrationWarning>
-            Local time: {currentTime ?? "--"}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild className="bg-indigo-600 text-white hover:bg-indigo-700">
-            <Link href="/requests/local/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Request
-            </Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href="/requests/local/additional">
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Create Additional Delivery
-            </Link>
-          </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export Excel
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Requests"
+        title="Local Request List"
+        subtitle={currentTime ? `Local time: ${currentTime}` : "Local time: --"}
+        actions={
+          <>
+            <Button asChild className="bg-indigo-600 text-white hover:bg-indigo-700">
+              <Link href="/requests/local/new">
+                <Plus className="h-4 w-4" />
+                Add New Request
+              </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/requests/local/additional">
+                <SlidersHorizontal className="h-4 w-4" />
+                Create Additional Delivery
+              </Link>
+            </Button>
+            <Button variant="outline">
+              <Download className="h-4 w-4" />
+              Export Excel
+            </Button>
+          </>
+        }
+      />
 
       <Separator />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[240px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            className="pl-9"
-            placeholder="Search request number, customer, email..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        </div>
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-              <Badge className="ml-2 bg-slate-100 text-slate-600 hover:bg-slate-100">{activeFilterCount}</Badge>
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="flex flex-col gap-6">
-            <SheetHeader>
-              <SheetTitle>Advanced Filters</SheetTitle>
-              <SheetDescription>Refine local requests by status, owner, or timeframe.</SheetDescription>
-            </SheetHeader>
-
-            <div className="flex flex-col gap-5 px-6">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Warehouse</p>
-                <Select value={filters.warehouse} onValueChange={(value) => setFilters((prev) => ({ ...prev, warehouse: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All warehouses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {warehouseOptions.map((warehouse) => (
-                      <SelectItem key={warehouse} value={warehouse}>
-                        {warehouse}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Request Status</p>
-                <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as FilterState["status"] }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="inprogress">In Progress</SelectItem>
-                    <SelectItem value="processed">Processed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Request Type</p>
-                <Select value={filters.requestType} onValueChange={(value) => setFilters((prev) => ({ ...prev, requestType: value as FilterState["requestType"] }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="delivery">Delivery</SelectItem>
-                    <SelectItem value="pickup">Pickup</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Request Date</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <Input
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={(event) => setFilters((prev) => ({ ...prev, dateFrom: event.target.value }))}
-                  />
-                  <Input
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={(event) => setFilters((prev) => ({ ...prev, dateTo: event.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Customer Company</p>
-                <Input
-                  placeholder="Search customer company"
-                  value={filters.customerCompany}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, customerCompany: event.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Email</p>
-                <Input
-                  placeholder="Search email address"
-                  value={filters.email}
-                  onChange={(event) => setFilters((prev) => ({ ...prev, email: event.target.value }))}
-                />
-              </div>
-            </div>
-
-            <SheetFooter>
-              <Button variant="outline" onClick={handleClearFilters}>
-                Clear
-              </Button>
-              <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Apply Filters</Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-        {activeFilterCount > 0 && (
-          <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-50">
-            {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} applied
-          </Badge>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Columns3 className="mr-2 h-4 w-4" />
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Status</DropdownMenuItem>
-            <DropdownMenuItem>Owner</DropdownMenuItem>
-            <DropdownMenuItem>Customer</DropdownMenuItem>
-            <DropdownMenuItem>Last Updated</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <Button variant="ghost" className="text-slate-500">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Reset
-        </Button>
-      </div>
-
-      <Card className="border-slate-200">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="border-border/60 bg-card shadow-sm">
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <CardTitle className="text-lg">Local Requests</CardTitle>
-            <p className="text-sm text-slate-500">Track requests, approvals, and hand-offs at a glance.</p>
+            <CardTitle className="text-base">Local Requests</CardTitle>
+            <p className="text-sm text-muted-foreground">Track requests, approvals, and hand-offs at a glance.</p>
           </div>
-          <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-50">{totalRequests} Results</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
+          <TableToolbar
+            searchPlaceholder="Search request number, customer, email..."
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            actions={
+              <>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="h-9">
+                      <Filter className="h-4 w-4" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="flex flex-col gap-6 px-6 pb-6 pt-4">
+                    <SheetHeader>
+                      <SheetTitle>Advanced Filters</SheetTitle>
+                      <SheetDescription>Refine local requests by status, owner, or timeframe.</SheetDescription>
+                    </SheetHeader>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Warehouse</p>
+                        <Select value={filters.warehouse} onValueChange={(value) => setFilters((prev) => ({ ...prev, warehouse: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All warehouses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            {warehouseOptions.map((warehouse) => (
+                              <SelectItem key={warehouse} value={warehouse}>
+                                {warehouse}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Request Status</p>
+                        <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value as FilterState["status"] }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All statuses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="inprogress">In Progress</SelectItem>
+                            <SelectItem value="processed">Processed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Request Type</p>
+                        <Select value={filters.requestType} onValueChange={(value) => setFilters((prev) => ({ ...prev, requestType: value as FilterState["requestType"] }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All types" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="delivery">Delivery</SelectItem>
+                            <SelectItem value="pickup">Pickup</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Request Date</p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <Input
+                            type="date"
+                            value={filters.dateFrom}
+                            onChange={(event) => setFilters((prev) => ({ ...prev, dateFrom: event.target.value }))}
+                          />
+                          <Input
+                            type="date"
+                            value={filters.dateTo}
+                            onChange={(event) => setFilters((prev) => ({ ...prev, dateTo: event.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Last Update</p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <Input
+                            type="date"
+                            value={filters.lastUpdateFrom}
+                            onChange={(event) => setFilters((prev) => ({ ...prev, lastUpdateFrom: event.target.value }))}
+                          />
+                          <Input
+                            type="date"
+                            value={filters.lastUpdateTo}
+                            onChange={(event) => setFilters((prev) => ({ ...prev, lastUpdateTo: event.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Customer Company</p>
+                        <Input
+                          placeholder="Search customer company"
+                          value={filters.customerCompany}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, customerCompany: event.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Email</p>
+                        <Input
+                          placeholder="Search email address"
+                          value={filters.email}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, email: event.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <SheetFooter>
+                      <Button variant="outline" onClick={handleClearFilters}>
+                        Clear
+                      </Button>
+                      <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Apply Filters</Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-9">
+                      <Columns3 className="h-4 w-4" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.email}
+                      onCheckedChange={(value) => setVisibleColumns((current) => ({ ...current, email: Boolean(value) }))}
+                    >
+                      Email
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.requestDate}
+                      onCheckedChange={(value) =>
+                        setVisibleColumns((current) => ({ ...current, requestDate: Boolean(value) }))
+                      }
+                    >
+                      Request Date
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-9">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Density: {density === "compact" ? "Compact" : "Comfortable"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Row Density</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setDensity("compact")}>Compact</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setDensity("comfortable")}>Comfortable</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" className="h-9">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              </>
+            }
+            meta={
+              <>
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary">{activeFilterCount} filters applied</Badge>
+                )}
+                <span>{totalRequests} results</span>
+              </>
+            }
+          />
+
           <Table className="min-w-[1100px]">
-            <TableHeader className="sticky top-0 z-10 bg-white">
-              <TableRow>
-                <TableHead>Request No.</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Warehouse</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Request Type</TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    className="h-8 px-2 text-slate-600 hover:text-slate-900"
-                    onClick={() => handleSort("requestDate")}
-                  >
-                    Request Date
-                    <ArrowUpDown className="ml-2 h-3 w-3" />
-                  </Button>
-                </TableHead>
-                <TableHead>
+            <TableHeader className="sticky top-0 z-10 bg-card/95">
+              <TableRow className={rowClass}>
+                <TableHead className={cellClass}>Request No.</TableHead>
+                <TableHead className={cellClass}>Customer</TableHead>
+                <TableHead className={cellClass}>Warehouse</TableHead>
+                {visibleColumns.email && <TableHead className={cellClass}>Email</TableHead>}
+                <TableHead className={cellClass}>Request Type</TableHead>
+                {visibleColumns.requestDate && (
+                  <TableHead className={cellClass}>
+                    <Button
+                      variant="ghost"
+                      className="h-8 px-2 text-slate-600 hover:text-slate-900"
+                      onClick={() => handleSort("requestDate")}
+                    >
+                      Request Date
+                      <ArrowUpDown className="ml-2 h-3 w-3" />
+                    </Button>
+                  </TableHead>
+                )}
+                <TableHead className={cellClass}>
                   <Button
                     variant="ghost"
                     className="h-8 px-2 text-slate-600 hover:text-slate-900"
@@ -575,7 +633,7 @@ export default function LocalRequestsPage() {
                     <ArrowUpDown className="ml-2 h-3 w-3" />
                   </Button>
                 </TableHead>
-                <TableHead>
+                <TableHead className={cellClass}>
                   <Button
                     variant="ghost"
                     className="h-8 px-2 text-slate-600 hover:text-slate-900"
@@ -585,15 +643,15 @@ export default function LocalRequestsPage() {
                     <ArrowUpDown className="ml-2 h-3 w-3" />
                   </Button>
                 </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className={`${cellClass} text-right`}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading &&
                 Array.from({ length: 6 }).map((_, index) => (
-                  <TableRow key={`skeleton-${index}`}>
-                    {Array.from({ length: 9 }).map((__, cellIndex) => (
-                      <TableCell key={`skeleton-cell-${cellIndex}`}>
+                  <TableRow key={`skeleton-${index}`} className={rowClass}>
+                    {Array.from({ length: emptyColSpan }).map((__, cellIndex) => (
+                      <TableCell key={`skeleton-cell-${cellIndex}`} className={cellClass}>
                         <Skeleton className="h-4 w-full max-w-[160px]" />
                       </TableCell>
                     ))}
@@ -601,40 +659,56 @@ export default function LocalRequestsPage() {
                 ))}
               {!isLoading &&
                 paginatedRequests.map((request: LocalRequest) => (
-                  <TableRow key={request.id} className="hover:bg-slate-50/80">
-                    <TableCell className="font-medium text-slate-900">
-                    <Button
-                      variant="ghost"
-                      className="h-auto px-0 text-indigo-600 hover:text-indigo-700"
-                      onClick={() => handleOpenDetails(request)}
-                    >
-                      {request.requestNumber}
-                    </Button>
+                  <TableRow
+                    key={request.id}
+                    className={`${rowClass} cursor-pointer hover:bg-muted/40`}
+                    onClick={() => handleOpenDetails(request)}
+                  >
+                    <TableCell className={`${cellClass} font-medium text-foreground`}>
+                      <Button
+                        variant="ghost"
+                        className="h-auto px-0 text-indigo-600 hover:text-indigo-700"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOpenDetails(request);
+                        }}
+                      >
+                        {request.requestNumber}
+                      </Button>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className={cellClass}>
                       <div>
                         <p className="font-medium text-slate-900">{request.customerCompany}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-600">{request.warehouse}</TableCell>
-                    <TableCell className="text-slate-600">{request.email}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className={typeBadgeClass[request.requestType]}>{typeLabel[request.requestType]}</Badge>
-                      {request.isAdditional && (
-                        <Badge className="bg-slate-100 text-slate-700">Additional</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                    <TableCell className="text-slate-600">{request.requestDate}</TableCell>
-                    <TableCell className="text-slate-600">{request.lastUpdate}</TableCell>
-                    <TableCell>
-                      <Badge className={statusBadgeClass[request.status]}>{statusLabel[request.status]}</Badge>
+                    <TableCell className={cellClass}>{request.warehouse}</TableCell>
+                    {visibleColumns.email && <TableCell className={cellClass}>{request.email}</TableCell>}
+                    <TableCell className={cellClass}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={`${requestTypeBadgeClass[request.requestType]} ${badgeClass}`}>
+                          {typeLabel[request.requestType]}
+                        </Badge>
+                        {request.isAdditional && (
+                          <Badge className={`bg-slate-100 text-slate-700 ${badgeClass}`}>Additional</Badge>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    {visibleColumns.requestDate && <TableCell className={cellClass}>{request.requestDate}</TableCell>}
+                    <TableCell className={cellClass}>{request.lastUpdate}</TableCell>
+                    <TableCell className={cellClass}>
+                      <Badge className={`${requestStatusBadgeClass[request.status]} ${badgeClass}`}>
+                        {statusLabel[request.status]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className={`${cellClass} text-right`}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={actionBtnClass}
+                            onClick={(event) => event.stopPropagation()}
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -653,7 +727,7 @@ export default function LocalRequestsPage() {
                 ))}
               {!isLoading && paginatedRequests.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-14 text-center text-sm text-slate-500">
+                  <TableCell colSpan={emptyColSpan} className="py-14 text-center text-sm text-slate-500">
                     <div className="flex flex-col items-center gap-3">
                       <span>No matching requests found. Adjust filters or clear to see all data.</span>
                       <Button variant="outline" onClick={handleClearFilters}>
@@ -666,67 +740,13 @@ export default function LocalRequestsPage() {
             </TableBody>
           </Table>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-              <span>
-                Showing {(clampedPageIndex - 1) * pageSize + (paginatedRequests.length ? 1 : 0)}-
-                {(clampedPageIndex - 1) * pageSize + paginatedRequests.length} of {totalRequests} requests
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-400">Page size</span>
-                <Select
-                  value={pageSize.toString()}
-                  onValueChange={(value) => setPageSize(Number(value))}
-                >
-                  <SelectTrigger className="h-8 w-[88px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <Pagination className="mx-0 w-auto">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    disabled={clampedPageIndex === 1}
-                    onClick={() => setPageIndex((prev) => Math.max(1, prev - 1))}
-                  />
-                </PaginationItem>
-                {getPageNumbers().map((pageNumber, index, pages) => {
-                  const previous = pages[index - 1];
-                  const showGap = previous && pageNumber - previous > 1;
-                  return (
-                    <React.Fragment key={pageNumber}>
-                      {showGap && (
-                        <PaginationItem>
-                          <PaginationLink disabled>...</PaginationLink>
-                        </PaginationItem>
-                      )}
-                      <PaginationItem>
-                        <PaginationLink
-                          isActive={pageNumber === clampedPageIndex}
-                          onClick={() => setPageIndex(pageNumber)}
-                        >
-                          {pageNumber}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </React.Fragment>
-                  );
-                })}
-                <PaginationItem>
-                  <PaginationNext
-                    disabled={clampedPageIndex === totalPages}
-                    onClick={() => setPageIndex((prev) => Math.min(totalPages, prev + 1))}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+          <PaginationFooter
+            pageSize={pageSize}
+            pageIndex={pageIndex}
+            totalCount={totalRequests}
+            onPageChange={setPageIndex}
+            onPageSizeChange={setPageSize}
+          />
         </CardContent>
       </Card>
     </div>

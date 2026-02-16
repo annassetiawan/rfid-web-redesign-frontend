@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Search, SlidersHorizontal } from "lucide-react";
+import * as React from "react";
+import { Bell, Moon, Search, SlidersHorizontal, Sun } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,25 @@ type DashboardTopbarProps = {
 };
 
 export function DashboardTopbar({ onToggleSidebar }: DashboardTopbarProps) {
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const nextIsDark = stored ? stored === "dark" : prefersDark;
+    document.documentElement.classList.toggle("dark", nextIsDark);
+    setIsDark(nextIsDark);
+  }, []);
+
+  const handleToggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
   return (
     <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center gap-3 px-4 md:px-6">
@@ -61,6 +81,10 @@ export function DashboardTopbar({ onToggleSidebar }: DashboardTopbarProps) {
           <Button size="icon" variant="ghost">
             <Bell className="h-4 w-4" />
             <span className="sr-only">Notifications</span>
+          </Button>
+          <Button size="icon" variant="ghost" onClick={handleToggleTheme}>
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span className="sr-only">Toggle theme</span>
           </Button>
 
           <DropdownMenu>

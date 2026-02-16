@@ -6,7 +6,7 @@ export type InventoryActiveStatus = "active" | "inactive";
 
 export type InventoryItem = {
   id: string;
-  name: string;
+  unitId: string;
   serialNumber: string;
   rfidCode: string;
   inventoryStatus: InventoryStatus;
@@ -21,6 +21,6 @@ export type InventoryItem = {
 export type Product = InventoryItem;
 
 export type Accessory = InventoryItem & {
-  mainUnit: string;
+  mainUnitId: string;
   groupedWith: string;
 };
