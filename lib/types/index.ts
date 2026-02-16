@@ -4,3 +4,4 @@ export * from "./search";
 export * from "./cycle-count";
 export * from "./cycle-count-item";
 export * from "./customer";
+export * from "./warehouse";
