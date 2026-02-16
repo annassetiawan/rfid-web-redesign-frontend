@@ -45,7 +45,7 @@ export const navGroups: NavGroup[] = [
         children: [
           { label: "Inventory", href: "/inventory" },
           { label: "Master Data", href: "/master-data/units" },
-          { label: "Unit Relation", href: "#" }
+          { label: "Unit Relation", href: "/master-data/unit-relation" }
         ]
       },
       { label: "Search", href: "#", icon: Search },
