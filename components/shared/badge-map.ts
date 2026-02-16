@@ -3,6 +3,7 @@ import type { RequestStatus, RequestType } from "@/lib/types/request";
 import type { CycleCountCategory, CycleCountStatus } from "@/lib/types/cycle-count";
 import type { CycleCountItemScanStatus } from "@/lib/types/cycle-count-item";
 import type { ScannerState } from "@/lib/types/scanner";
+import type { LogisticEmailType } from "@/lib/types/logisticEmail";
 
 export const statusBadgeClass: Record<MasterUnitStatus, string> = {
   active: "bg-emerald-50 text-emerald-700",
@@ -49,4 +50,9 @@ export const scannerStateBadgeClass: Record<ScannerState, string> = {
   new: "bg-indigo-100 text-indigo-700",
   faulty: "bg-rose-100 text-rose-700",
   test: "bg-amber-100 text-amber-700"
+};
+
+export const logisticEmailTypeBadgeClass: Record<LogisticEmailType, string> = {
+  warehouse: "bg-sky-100 text-sky-700",
+  cc: "bg-indigo-100 text-indigo-700"
 };

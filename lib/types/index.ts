@@ -6,3 +6,4 @@ export * from "./cycle-count-item";
 export * from "./customer";
 export * from "./warehouse";
 export * from "./scanner";
+export * from "./logisticEmail";
