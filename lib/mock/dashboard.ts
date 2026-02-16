@@ -48,7 +48,7 @@ export const navGroups: NavGroup[] = [
           { label: "Unit Relation", href: "/master-data/unit-relation" }
         ]
       },
-      { label: "Search", href: "#", icon: Search },
+      { label: "Search", href: "/search", icon: Search },
       { label: "Cycle Count", href: "#", icon: Package },
       { label: "Customer", href: "#", icon: Users },
       { label: "Warehouse", href: "#", icon: Warehouse },
