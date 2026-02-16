@@ -6,3 +6,4 @@ export * from "./customers";
 export * from "./warehouses";
 export * from "./scanners";
 export * from "./logisticEmails";
+export * from "./users";
