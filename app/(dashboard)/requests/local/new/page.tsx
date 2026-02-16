@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormStepper } from "@/components/form/stepper";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   Dialog,
   DialogContent,
@@ -392,14 +393,12 @@ export default function NewLocalRequestPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Requests</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Create New Local Request</h1>
-          <p className="text-sm text-slate-500">Draft in progress - Local time reflects your current timezone</p>
-        </div>
-        <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">Draft</Badge>
-      </div>
+      <PageHeader
+        eyebrow="Requests"
+        title="Create New Local Request"
+        subtitle="Draft in progress - Local time reflects your current timezone"
+        actions={<Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">Draft</Badge>}
+      />
 
       <Separator />
 
@@ -418,7 +417,7 @@ export default function NewLocalRequestPage() {
 
       <div className="grid gap-6">
         {currentStep === 1 && (
-          <Card className="border-slate-200">
+          <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Request</CardTitle>
           </CardHeader>
@@ -609,7 +608,7 @@ export default function NewLocalRequestPage() {
         )}
 
         {currentStep === 2 && (
-        <Card className="border-slate-200">
+        <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Unit Details</CardTitle>
           </CardHeader>
@@ -624,7 +623,7 @@ export default function NewLocalRequestPage() {
               </Button>
             </div>
 
-            <Accordion type="multiple" className="mt-4 rounded-lg border border-slate-200 bg-white">
+            <Accordion type="multiple" className="mt-4 rounded-lg border border-border/60 bg-white">
               {unitRows.map((row, index) => (
                 <AccordionItem key={row.id} value={row.id} className="px-4">
                   <AccordionTrigger>
@@ -865,7 +864,7 @@ export default function NewLocalRequestPage() {
         )}
 
         {currentStep === 3 && (
-        <Card className="border-slate-200">
+        <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Ship To</CardTitle>
           </CardHeader>
@@ -1139,7 +1138,7 @@ export default function NewLocalRequestPage() {
         )}
 
         {currentStep === 4 && (
-        <Card className="border-slate-200">
+        <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Additional Recipients</CardTitle>
           </CardHeader>
@@ -1176,7 +1175,7 @@ export default function NewLocalRequestPage() {
             </div>
 
             {recipients.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-border/60 bg-slate-50/60 px-4 py-6 text-center text-sm text-slate-500">
                 No additional recipients added yet.
               </div>
             ) : (
@@ -1201,7 +1200,7 @@ export default function NewLocalRequestPage() {
 
         {currentStep === 5 && (
           <>
-          <Card className="border-slate-200">
+          <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Signature & Attachments</CardTitle>
           </CardHeader>
@@ -1261,7 +1260,7 @@ export default function NewLocalRequestPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200">
+        <Card className="border-border/60 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Attach File</CardTitle>
           </CardHeader>
@@ -1313,14 +1312,14 @@ export default function NewLocalRequestPage() {
                   />
                 </div>
                 {uploadedFile ? (
-                  <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                  <div className="flex items-center justify-between rounded-lg border border-border/60 bg-slate-50 px-3 py-2 text-sm">
                     <span className="text-slate-600">{uploadedFile.name}</span>
                     <Button variant="ghost" size="sm" onClick={() => setUploadedFile(null)}>
                       Remove
                     </Button>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-sm text-slate-500">
+                  <div className="rounded-lg border border-dashed border-border/60 px-3 py-4 text-center text-sm text-slate-500">
                     No file uploaded yet.
                   </div>
                 )}
@@ -1332,7 +1331,7 @@ export default function NewLocalRequestPage() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur">
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border/60 bg-background/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-4">
             <Button variant="ghost" onClick={() => router.push("/requests/local")}>
               Cancel

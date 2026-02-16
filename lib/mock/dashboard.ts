@@ -44,7 +44,7 @@ export const navGroups: NavGroup[] = [
         hasChevron: true,
         children: [
           { label: "Inventory", href: "/inventory" },
-          { label: "Master Data", href: "#" },
+          { label: "Master Data", href: "/master-data/units" },
           { label: "Unit Relation", href: "#" }
         ]
       },
